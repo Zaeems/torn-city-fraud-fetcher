@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Torn API - Fraud Fetcher</title>
+	<style>
+		table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			padding: 5px;
+		}
+		th {
+			background-color: #f2f2f2;
+		}
+	</style>
+</head>
+<body>
+	<h1>Torn API - Fraud Fetcher</h1>
+    <p>API Key:</p>
+    <textarea id="apiKey"></textarea><br>
+	<p>Enter one or more user IDs (comma separated):</p>
+	<textarea id="userIds"></textarea><br><br>
+	<button onclick="fetchData()">Fetch Data</button><br><br>
+	<div id="results"></div>
+	<script>
+		function fetchData() {
+        const userIds = document.getElementById("userIds").value.split(",").map(id => id.trim()); // Get the user IDs from the input field
+        const apiKey = document.getElementById("apiKey").value; // Torn API key
+        const resultsDiv = document.getElementById("results"); // Get the results div
+
+        let promises = userIds.map(id => {
+        const url = `https://api.torn.com/user/${id}?selections=crimes&key=${apiKey}`; // Use the user ID in the API request URL
+        return fetch(url)
+            .then((response) => response.json()) // Converts the fetched data into JSON
+            .then((jsonResponse) => {
+                const fraudCrimes = jsonResponse.criminalrecord.fraud_crimes;
+                
+                // Create a table row for the user
+                const row = document.createElement("tr");
+
+                // Add the user ID to the first column of the row
+                const idCell = document.createElement("td");
+                idCell.innerText = id;
+                row.appendChild(idCell);
+
+                // Add the API response to the second column of the row
+                const responseCell = document.createElement("td");
+                responseCell.innerText = fraudCrimes;
+                row.appendChild(responseCell);
+
+                // Add the row to the table
+                resultsTable.appendChild(row);
+            });
+        });
+
+        // Wait for all promises to resolve before continuing
+        Promise.all(promises)
+            .then(() => console.log("All requests complete!"));
+        }
+	</script>
+
+    <div>
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                <th>ID</th>
+                <th>Frauds</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</body>
+</html>
